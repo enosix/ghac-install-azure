@@ -1,0 +1,54 @@
+name: 'Docker Push to Github'
+description: 'Build and push an image to ghcr'
+inputs:
+  github_token:
+    required: true
+  dockerhub_user:
+    required: true
+  dockerhub_password:
+    required: true
+  image:
+    required: true
+outputs:
+  version:
+    description: "Image Version"
+    value: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+runs:
+  using: "composite"
+  steps:
+    - name: Tag Docker Image
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ inputs.image }}
+        flavor: latest=true
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ inputs.github_token }}
+    - name: Build and push to GitHub Container Registry
+      uses: docker/build-push-action@v4
+      with:
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=registry,ref=${{ inputs.image }}:latest
+        cache-to: type=inline
+    - name: Check CVEs
+      uses: enosix/github-action-docker-scout@v1.0
+      with:
+        image: ${{ inputs.image }}:${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+        args: '-e --only-fixed'
+        # Authenticate with Docker Hub
+        user: ${{ inputs.dockerhub_user }}
+        password: ${{ inputs.dockerhub_password }}
+        # Optional registry authentication when pulling private images
+        registry_user: ${{ github.actor }}
+        registry_password: ${{ inputs.github_token }}
