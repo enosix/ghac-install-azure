@@ -9,10 +9,15 @@ inputs:
     required: true
   image:
     required: true
+  context:
+    required: false
+  dockerfile:
+    required: false
 outputs:
   version:
     description: "Image Version"
     value: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+
 runs:
   using: "composite"
   steps:
@@ -37,10 +42,10 @@ runs:
       uses: docker/build-push-action@v4
       with:
         push: true
+        context: ${{ inputs.context }}
+        file: ${{ inputs.dockerfile }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=registry,ref=${{ inputs.image }}:latest
-        cache-to: type=inline
     - name: Check CVEs
       uses: enosix/github-action-docker-scout@v1.0
       with:
