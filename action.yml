@@ -1,64 +1,20 @@
-name: 'Docker Push to Github'
-description: 'Build and push an image to ghcr'
-inputs:
-  github_token:
-    required: true
-  dockerhub_user:
-    required: true
-  dockerhub_password:
-    required: true
-  image:
-    required: true
-  context:
-    required: false
-  dockerfile:
-    required: false
-
-outputs:
-  version:
-    description: "Image Version"
-    value: ${{ steps.image.outputs.version }}
-
+name: 'Install Azure CLI'
+description: 'Install the Azure CLI'
 runs:
   using: "composite"
   steps:
-    - name: Tag Docker Image
-      id: meta
-      uses: docker/metadata-action@v4
-      with:
-        images: ${{ inputs.image }}
-        flavor: latest=true
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-    - name: Get Image
-      id: image
+    - name: Install Azure CLI
       shell: bash
-      run: echo "version=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}" >> $GITHUB_OUTPUT
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v2
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ inputs.github_token }}
-    - name: Build and push to GitHub Container Registry
-      uses: docker/build-push-action@v4
-      with:
-        push: true
-        context: ${{ inputs.context }}
-        file: ${{ inputs.dockerfile }}
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-    - name: Check CVEs
-      uses: enosix/github-action-docker-scout@v1.0
-      with:
-        image: ${{ inputs.image }}:${{ steps.image.outputs.version }}
-        args: '-e --only-fixed'
-        # Authenticate with Docker Hub
-        user: ${{ inputs.dockerhub_user }}
-        password: ${{ inputs.dockerhub_password }}
-        # Optional registry authentication when pulling private images
-        registry_user: ${{ github.actor }}
-        registry_password: ${{ inputs.github_token }}
+      run: |
+        apt update
+        apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg
+        mkdir -p /etc/apt/keyrings
+        curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/keyrings/microsoft.gpg > /dev/null
+        chmod go+r /etc/apt/keyrings/microsoft.gpg
+
+        AZ_REPO=$(lsb_release -cs)
+        echo "deb [arch=`dpkg --print-architecture` signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" |
+        tee /etc/apt/sources.list.d/azure-cli.list
+
+        apt update
+        apt install -y azure-cli jq
