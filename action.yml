@@ -1,5 +1,11 @@
 name: 'Install Azure CLI'
 description: 'Install the Azure CLI'
+inputs:
+  creds:
+    required: false
+  allow-no-subscriptions:
+    required: false
+    default: false
 runs:
   using: "composite"
   steps:
@@ -18,3 +24,9 @@ runs:
 
         apt update
         apt install -y azure-cli jq
+    - name: Azure login
+      if: "${{ inputs.creds != '' }}"
+      uses: azure/login@v1
+      with:
+        allow-no-subscriptions: ${{ inputs.allow-no-subscriptions }}
+        creds: ${{ inputs.creds }}
