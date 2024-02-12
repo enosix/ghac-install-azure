@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   test-and-tag:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, 4gb]
     steps:
       - uses: actions/checkout@v4
       - name: Test Action
