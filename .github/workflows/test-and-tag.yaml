@@ -28,15 +28,15 @@ jobs:
       - name: Test Action
         uses: ./
         with:
-          azure_client_id: ${{ secrets.AZURE_CLIENT_ID }}
-          azure_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
-          azure_webapp_name: ${{ env.AZURE_WEBAPP_NAME }}
-          resource_group: ${{ env.RESOURCE_GROUP }}
-          deployment_slot: ghac-azure-web-app
-          ad_app_id: ${{ env.AZURE_AD_APP_ID }}
-          image: ghcr.io/enosix/connect-admin-ui:main
+          allow-no-subscriptions: true
+          creds: |
+            {
+              "clientId": "${{ secrets.AZURE_AD_CLIENT_ID }}",
+              "clientSecret": "${{ secrets.AZURE_AD_CLIENT_SECRET }}",
+              "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}",
+              "tenantId": "${{ secrets.AZURE_AD_TENANT_ID }}",
+              "resourceManagerEndpointUrl": "https://management.azure.com/"
+            }
       - name: Remove slot
         run: |
           az webapp deployment slot delete --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --slot ghac-azure-web-app
