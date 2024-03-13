@@ -28,7 +28,7 @@ runs:
         apt install -y azure-cli jq
     - name: Azure login
       if: "${{ inputs.creds != '' }}"
-      uses: azure/login@v1
+      uses: azure/login@v2
       with:
         allow-no-subscriptions: ${{ inputs.allow-no-subscriptions }}
         creds: ${{ inputs.creds }}
