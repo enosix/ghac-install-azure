@@ -14,31 +14,17 @@ runs:
     - name: Install Azure CLI
       shell: bash
       run: |
-        if [ -w /var/cache/apt/pkgcache.bin ]; then 
-          apt update
-          apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg
-          mkdir -p /etc/apt/keyrings
-          curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/keyrings/microsoft.gpg > /dev/null
-          chmod go+r /etc/apt/keyrings/microsoft.gpg
-  
-          AZ_REPO=$(lsb_release -cs)
-          echo "deb [arch=`dpkg --print-architecture` signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | tee /etc/apt/sources.list.d/azure-cli.list
-  
-          apt update
-          apt install -y azure-cli jq
-        else 
-          sudo apt update
-          sudo apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg
-          sudo mkdir -p /etc/apt/keyrings
-          curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /etc/apt/keyrings/microsoft.gpg > /dev/null
-          sudo chmod go+r /etc/apt/keyrings/microsoft.gpg
-  
-          AZ_REPO=$(lsb_release -cs)
-          echo "deb [arch=`dpkg --print-architecture` signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | sudo tee /etc/apt/sources.list.d/azure-cli.list
-  
-          sudo apt update
-          sudo apt install -y azure-cli jq
-        fi
+        apt update
+        apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg
+        mkdir -p /etc/apt/keyrings
+        curl -sLS https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/keyrings/microsoft.gpg > /dev/null
+        chmod go+r /etc/apt/keyrings/microsoft.gpg
+
+        AZ_REPO=$(lsb_release -cs)
+        echo "deb [arch=`dpkg --print-architecture` signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | tee /etc/apt/sources.list.d/azure-cli.list
+
+        apt update
+        apt install -y azure-cli jq
     - name: Azure login
       if: "${{ inputs.creds != '' }}"
       uses: azure/login@v2
