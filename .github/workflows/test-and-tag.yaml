@@ -36,9 +36,6 @@ jobs:
               "tenantId": "${{ secrets.AZURE_AD_TENANT_ID }}",
               "resourceManagerEndpointUrl": "https://management.azure.com/"
             }
-      - name: Remove slot
-        run: |
-          az webapp deployment slot delete --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.RESOURCE_GROUP }} --slot ghac-azure-web-app
       - name: Create tag
         uses: actions/github-script@v7
         with:
